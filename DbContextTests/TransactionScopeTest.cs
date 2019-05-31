@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Transactions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OtherContext;
@@ -11,33 +13,26 @@ namespace DbContextTests
     public class UnitTest1
     {
         private int perfLoops = 1000;
+        private int userId = 1;
+        private string perfLogFile = "perf.csv";
 
         [TestMethod]
         public void rollback_transaction_in_multiple_same_contexts()
         {
-            var userId = 1;
             PrepareUser(userId);
 
             var initialCount = GetUserOrdersCount(userId);
-            
+
             using (var tran = new TransactionScope())
             {
                 using (var db = new MyContext())
                 {
-                    var user = db.Users.Find(userId);
-                    user.OrdersCount++;
-
-                    db.SaveChanges();
+                    IncreateUserOrdersCount(db);
                 }
 
                 using (var db = new MyContext())
                 {
-                    db.Orders.Add(new Model.Order()
-                    {
-                        User = db.Users.Find(userId)
-                    }); ;
-
-                    db.SaveChanges();
+                    AddOrder(db);
                 }
             }
 
@@ -58,41 +53,48 @@ namespace DbContextTests
 
             var initialCount = GetUserOrdersCount(userId);
 
-            var sw = Stopwatch.StartNew();
-
-            for (int i = 0; i < perfLoops; i++)
+            MeasurePerf(() =>
             {
                 using (var tran = new TransactionScope())
                 {
                     using (var db = new MyContext())
                     {
-                        var user = db.Users.Find(userId);
-                        user.OrdersCount++;
-
-                        db.SaveChanges();
+                        IncreateUserOrdersCount(db);
                     }
 
                     using (var db = new MyContext())
                     {
-                        db.Orders.Add(new Model.Order()
-                        {
-                            User = db.Users.Find(userId)
-                        }); ;
-
-                        db.SaveChanges();
+                        AddOrder(db);
                     }
                 }
-            }
+            });
+        }
 
-            Trace.WriteLine($"elapsed: {sw.Elapsed}");
+        [TestMethod]
+        public void commit_transaction_in_multiple_same_contexts_perf()
+        {
+            var userId = 1;
+            PrepareUser(userId);
 
-            using (var db = new MyContext())
+            var initialCount = GetUserOrdersCount(userId);
+
+            MeasurePerf(() =>
             {
-                var user = db.Users.Find(userId);
+                using (var tran = new TransactionScope())
+                {
+                    using (var db = new MyContext())
+                    {
+                        IncreateUserOrdersCount(db);
+                    }
 
-                Assert.AreEqual(initialCount, user.OrdersCount);
-                Assert.AreEqual(initialCount, user.Orders.Count());
-            }
+                    using (var db = new MyContext())
+                    {
+                        AddOrder(db);
+                    }
+
+                    tran.Complete();
+                }
+            });
         }
 
         [TestMethod]
@@ -103,38 +105,41 @@ namespace DbContextTests
 
             var initialCount = GetUserOrdersCount(userId);
 
-            var sw = Stopwatch.StartNew();
-
-            for (int i = 0; i < perfLoops; i++)
+            MeasurePerf(() =>
             {
                 using (var tran = new TransactionScope())
                 {
                     using (var db = new MyContext())
                     {
-                        var user = db.Users.Find(userId);
-                        user.OrdersCount++;
+                        IncreateUserOrdersCount(db);
 
-                        db.SaveChanges();
-
-                        db.Orders.Add(new Model.Order()
-                        {
-                            User = db.Users.Find(userId)
-                        }); ;
-
-                        db.SaveChanges();
+                        AddOrder(db);
                     }
                 }
-            }
+            });
+        }
 
-            Trace.WriteLine($"elapsed: {sw.Elapsed}");
+        [TestMethod]
+        public void commit_transaction_in_single_context_perf()
+        {
+            var userId = 1;
+            PrepareUser(userId);
 
-            using (var db = new MyContext())
+            var initialCount = GetUserOrdersCount(userId);
+
+            MeasurePerf(() =>
             {
-                var user = db.Users.Find(userId);
+                using (var tran = new TransactionScope())
+                {
+                    using (var db = new MyContext())
+                    {
+                        IncreateUserOrdersCount(db);
 
-                Assert.AreEqual(initialCount, user.OrdersCount);
-                Assert.AreEqual(initialCount, user.Orders.Count());
-            }
+                        AddOrder(db);
+                    }
+                    tran.Complete();
+                }
+            });
         }
 
         [TestMethod]
@@ -149,70 +154,14 @@ namespace DbContextTests
             {
                 using (var db = new MyContext())
                 {
-                    var user = db.Users.Find(userId);
-                    user.OrdersCount++;
-
-                    db.SaveChanges();
+                    IncreateUserOrdersCount(db);
                 }
 
                 using (var db = new OtherContext())
                 {
-                    db.Invoices.Add(new Invoice()
-                    {
-                        UserId = userId
-                    });
-                    db.SaveChanges();
+                    AddInvoice(db);
                 }
             }
-
-            using (var db = new MyContext())
-            {
-                var user = db.Users.Find(userId);
-
-                Assert.AreEqual(user.OrdersCount, initialCount);
-                Assert.AreEqual(user.Orders.Count(), initialCount);
-            }
-            using (var db = new OtherContext())
-            {
-                var invoicesCount = db.Invoices.Count(i => i.UserId ==userId);
-                Assert.AreEqual(0, invoicesCount);
-                
-            }
-        }
-
-        [TestMethod]
-        public void rollback_transaction_in_multiple_different_contexts_peref()
-        {
-            var userId = 1;
-            PrepareUser(userId);
-
-            var initialCount = GetUserOrdersCount(userId);
-            var sw = Stopwatch.StartNew();
-
-            for (int i = 0; i < perfLoops; i++)
-            {
-                using (var tran = new TransactionScope())
-                {
-                    using (var db = new MyContext())
-                    {
-                        var user = db.Users.Find(userId);
-                        user.OrdersCount++;
-
-                        db.SaveChanges();
-                    }
-
-                    using (var db = new OtherContext())
-                    {
-                        db.Invoices.Add(new Invoice()
-                        {
-                            UserId = userId
-                        });
-                        db.SaveChanges();
-                    }
-                }
-            }
-
-            Trace.WriteLine($"elapsed: {sw.Elapsed}");
 
             using (var db = new MyContext())
             {
@@ -227,6 +176,72 @@ namespace DbContextTests
                 Assert.AreEqual(0, invoicesCount);
 
             }
+        }
+
+        [TestMethod]
+        public void rollback_transaction_in_multiple_different_contexts_perf()
+        {
+            var userId = 1;
+            PrepareUser(userId);
+
+            var initialCount = GetUserOrdersCount(userId);
+
+            MeasurePerf(() =>
+            {
+                using (var tran = new TransactionScope())
+                {
+                    using (var db = new MyContext())
+                    {
+                        IncreateUserOrdersCount(db);
+                    }
+
+                    using (var db = new OtherContext())
+                    {
+                        AddInvoice(db);
+                    }
+                }
+            });
+        }
+
+        private void MeasurePerf(Action action, [CallerMemberName] string callerName = null)
+        {
+            var sw = Stopwatch.StartNew();
+
+            for (int i = 0; i < perfLoops; i++)
+            {
+                action();
+            }
+
+            Trace.WriteLine($"[{callerName}] elapsed: {sw.Elapsed}");
+
+            File.AppendAllText(perfLogFile, $"{callerName};{sw.Elapsed};{sw.ElapsedMilliseconds}\r\n");
+        }
+
+        private void AddOrder(MyContext db)
+        {
+            db.Orders.Add(new Model.Order()
+            {
+                User = db.Users.Find(userId)
+            }); ;
+
+            db.SaveChanges();
+        }
+
+        private void IncreateUserOrdersCount(MyContext db)
+        {
+            var user = db.Users.Find(userId);
+            user.OrdersCount++;
+
+            db.SaveChanges();
+        }
+
+        private void AddInvoice(OtherContext db)
+        {
+            db.Invoices.Add(new Invoice()
+            {
+                UserId = userId
+            });
+            db.SaveChanges();
         }
 
         private int GetUserOrdersCount(int userId)
