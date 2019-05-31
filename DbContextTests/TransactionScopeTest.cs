@@ -10,7 +10,7 @@ using OtherContext;
 namespace DbContextTests
 {
     [TestClass]
-    public class UnitTest1
+    public class TransactionScopeTest
     {
         private int perfLoops = 1000;
         private int userId = 1;
@@ -214,7 +214,7 @@ namespace DbContextTests
 
             Trace.WriteLine($"[{callerName}] elapsed: {sw.Elapsed}");
 
-            File.AppendAllText(perfLogFile, $"{callerName};{sw.Elapsed};{sw.ElapsedMilliseconds}\r\n");
+            File.AppendAllText(perfLogFile, $"{callerName};{perfLoops};{sw.Elapsed};{sw.ElapsedMilliseconds}\r\n");
         }
 
         private void AddOrder(MyContext db)
