@@ -120,6 +120,91 @@ namespace DbContextTests
         }
 
         [TestMethod]
+        public void rollback_transaction_in_single_context()
+        {
+            var userId = 1;
+            PrepareUser(userId);
+
+            var initialCount = GetUserOrdersCount(userId);
+
+            using (var tran = new TransactionScope())
+            {
+                using (var db = new MyContext())
+                {
+                    IncreateUserOrdersCount(db);
+
+                    AddOrder(db);
+                }
+            }
+
+        }
+
+        [TestMethod]
+        public void no_transactions_in_single_context_perf()
+        {
+            var userId = 1;
+            PrepareUser(userId);
+
+            MeasurePerf(() =>
+            {
+                using (var tran = new TransactionScope())
+                {
+                    using (var db = new MyContext())
+                    {
+                        IncreateUserOrdersCount(db);
+
+                        AddOrder(db);
+                    }
+                }
+            });
+        }
+
+        [TestMethod]
+        public void commit_db_transactions_in_single_context_perf()
+        {
+            var userId = 1;
+            PrepareUser(userId);
+
+            MeasurePerf(() =>
+            {
+                using (var db = new MyContext())
+                {
+                    using (var tran = db.Database.BeginTransaction())
+                    {
+                        IncreateUserOrdersCount(db);
+
+                        AddOrder(db);
+                        tran.Commit();
+                    }
+                }
+
+            });
+        }
+
+        [TestMethod]
+        public void rollback_db_transactions_in_single_context_perf()
+        {
+            var userId = 1;
+            PrepareUser(userId);
+
+            MeasurePerf(() =>
+            {
+                using (var db = new MyContext())
+                {
+                    using (var tran = db.Database.BeginTransaction())
+                    {
+                        IncreateUserOrdersCount(db);
+
+                        AddOrder(db);
+                        tran.Rollback();
+                    }
+                }
+
+            });
+        }
+
+
+        [TestMethod]
         public void commit_transaction_in_single_context_perf()
         {
             var userId = 1;
