@@ -48,7 +48,6 @@ namespace DbContextTests
         [TestMethod]
         public void rollback_transaction_in_multiple_same_contexts_perf()
         {
-            var userId = 1;
             PrepareUser(userId);
 
             var initialCount = GetUserOrdersCount(userId);
@@ -73,7 +72,6 @@ namespace DbContextTests
         [TestMethod]
         public void commit_transaction_in_multiple_same_contexts_perf()
         {
-            var userId = 1;
             PrepareUser(userId);
 
             var initialCount = GetUserOrdersCount(userId);
@@ -100,7 +98,6 @@ namespace DbContextTests
         [TestMethod]
         public void rollback_transaction_in_single_context_perf()
         {
-            var userId = 1;
             PrepareUser(userId);
 
             var initialCount = GetUserOrdersCount(userId);
@@ -122,7 +119,6 @@ namespace DbContextTests
         [TestMethod]
         public void rollback_transaction_in_single_context()
         {
-            var userId = 1;
             PrepareUser(userId);
 
             var initialCount = GetUserOrdersCount(userId);
@@ -142,7 +138,6 @@ namespace DbContextTests
         [TestMethod]
         public void no_transactions_in_single_context_perf()
         {
-            var userId = 1;
             PrepareUser(userId);
 
             MeasurePerf(() =>
@@ -162,7 +157,6 @@ namespace DbContextTests
         [TestMethod]
         public void commit_db_transactions_in_single_context_perf()
         {
-            var userId = 1;
             PrepareUser(userId);
 
             MeasurePerf(() =>
@@ -184,7 +178,6 @@ namespace DbContextTests
         [TestMethod]
         public void rollback_db_transactions_in_single_context_perf()
         {
-            var userId = 1;
             PrepareUser(userId);
 
             MeasurePerf(() =>
@@ -207,7 +200,6 @@ namespace DbContextTests
         [TestMethod]
         public void commit_transaction_in_single_context_perf()
         {
-            var userId = 1;
             PrepareUser(userId);
 
             var initialCount = GetUserOrdersCount(userId);
@@ -230,7 +222,6 @@ namespace DbContextTests
         [TestMethod]
         public void rollback_transaction_in_multiple_different_contexts()
         {
-            var userId = 1;
             PrepareUser(userId);
 
             var initialCount = GetUserOrdersCount(userId);
@@ -266,7 +257,6 @@ namespace DbContextTests
         [TestMethod]
         public void rollback_transaction_in_multiple_different_contexts_perf()
         {
-            var userId = 1;
             PrepareUser(userId);
 
             var initialCount = GetUserOrdersCount(userId);
