@@ -289,7 +289,35 @@ namespace DbContextTests
 
             Trace.WriteLine($"[{callerName}] elapsed: {sw.Elapsed}");
 
-            File.AppendAllText(perfLogFile, $"{callerName};{perfLoops};{sw.Elapsed};{sw.ElapsedMilliseconds}\r\n");
+            var csvRow = new PerfCsvRow()
+            {
+                TestName = callerName,
+                Loops = perfLoops,
+                Elapsed = sw.Elapsed,
+                ElapsedMs = sw.ElapsedMilliseconds,
+            };
+
+            ExtractTestNameData(callerName, ref csvRow);
+
+            AppendCsvRow(perfLogFile, csvRow);
+        }
+
+        private void ExtractTestNameData(string testName, ref PerfCsvRow csvRow)
+        {
+            testName = testName.ToLower();
+            csvRow.IsRollback = testName.Contains("rollback");
+            csvRow.TransactionType = testName.Contains("no_transaction") ? "None"
+                : testName.Contains("db_transaction") || testName.Contains("dbtransaction") ? "DatabaseTransaction"
+                : testName.Contains("_transaction_") ? "TransactionScope"
+                : "?";
+            csvRow.ContextCount = testName.Contains("multiple") ? 2 : 1;
+            csvRow.ContextTypeCount = testName.Contains("different_contexts") ? 2 : 1;
+        }
+
+        private void AppendCsvRow(string perfLogFile, PerfCsvRow row)
+        {
+            if (!File.Exists(perfLogFile)) File.AppendAllText(perfLogFile, row.HeeaderRow() + "\r\n");
+            File.AppendAllText(perfLogFile, row.ToCsvString() + "\r\n");
         }
 
         private void AddOrder(MyContext db)
