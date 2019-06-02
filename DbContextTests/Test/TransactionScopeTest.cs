@@ -12,9 +12,13 @@ namespace DbContextTests
     [TestClass]
     public class TransactionScopeTest
     {
-        private int perfLoops = 1000;
         private int userId = 1;
-        private string perfLogFile = "perf.csv";
+        private PerformanceMeter perfMeter;
+
+        public TransactionScopeTest()
+        {
+            perfMeter = new PerformanceMeter("perf.csv", 1000);
+        }
 
         [TestMethod]
         public void rollback_transaction_in_multiple_same_contexts()
@@ -52,7 +56,7 @@ namespace DbContextTests
 
             var initialCount = GetUserOrdersCount(userId);
 
-            MeasurePerf(() =>
+            perfMeter.MeasurePerf(() =>
             {
                 using (var tran = new TransactionScope())
                 {
@@ -76,7 +80,7 @@ namespace DbContextTests
 
             var initialCount = GetUserOrdersCount(userId);
 
-            MeasurePerf(() =>
+            perfMeter.MeasurePerf(() =>
             {
                 using (var tran = new TransactionScope())
                 {
@@ -102,7 +106,7 @@ namespace DbContextTests
 
             var initialCount = GetUserOrdersCount(userId);
 
-            MeasurePerf(() =>
+            perfMeter.MeasurePerf(() =>
             {
                 using (var tran = new TransactionScope())
                 {
@@ -140,7 +144,7 @@ namespace DbContextTests
         {
             PrepareUser(userId);
 
-            MeasurePerf(() =>
+            perfMeter.MeasurePerf(() =>
             {
                 using (var tran = new TransactionScope())
                 {
@@ -159,7 +163,7 @@ namespace DbContextTests
         {
             PrepareUser(userId);
 
-            MeasurePerf(() =>
+            perfMeter.MeasurePerf(() =>
             {
                 using (var db = new MyContext())
                 {
@@ -180,7 +184,7 @@ namespace DbContextTests
         {
             PrepareUser(userId);
 
-            MeasurePerf(() =>
+            perfMeter.MeasurePerf(() =>
             {
                 using (var db = new MyContext())
                 {
@@ -204,7 +208,7 @@ namespace DbContextTests
 
             var initialCount = GetUserOrdersCount(userId);
 
-            MeasurePerf(() =>
+            perfMeter.MeasurePerf(() =>
             {
                 using (var tran = new TransactionScope())
                 {
@@ -261,7 +265,7 @@ namespace DbContextTests
 
             var initialCount = GetUserOrdersCount(userId);
 
-            MeasurePerf(() =>
+            perfMeter.MeasurePerf(() =>
             {
                 using (var tran = new TransactionScope())
                 {
@@ -276,48 +280,6 @@ namespace DbContextTests
                     }
                 }
             });
-        }
-
-        private void MeasurePerf(Action action, [CallerMemberName] string callerName = null)
-        {
-            var sw = Stopwatch.StartNew();
-
-            for (int i = 0; i < perfLoops; i++)
-            {
-                action();
-            }
-
-            Trace.WriteLine($"[{callerName}] elapsed: {sw.Elapsed}");
-
-            var csvRow = new PerfCsvRow()
-            {
-                TestName = callerName,
-                Loops = perfLoops,
-                Elapsed = sw.Elapsed,
-                ElapsedMs = sw.ElapsedMilliseconds,
-            };
-
-            ExtractTestNameData(callerName, ref csvRow);
-
-            AppendCsvRow(perfLogFile, csvRow);
-        }
-
-        private void ExtractTestNameData(string testName, ref PerfCsvRow csvRow)
-        {
-            testName = testName.ToLower();
-            csvRow.IsRollback = testName.Contains("rollback");
-            csvRow.TransactionType = testName.Contains("no_transaction") ? "None"
-                : testName.Contains("db_transaction") || testName.Contains("dbtransaction") ? "DatabaseTransaction"
-                : testName.Contains("_transaction_") ? "TransactionScope"
-                : "?";
-            csvRow.ContextCount = testName.Contains("multiple") ? 2 : 1;
-            csvRow.ContextTypeCount = testName.Contains("different_contexts") ? 2 : 1;
-        }
-
-        private void AppendCsvRow(string perfLogFile, PerfCsvRow row)
-        {
-            if (!File.Exists(perfLogFile)) File.AppendAllText(perfLogFile, row.HeeaderRow() + "\r\n");
-            File.AppendAllText(perfLogFile, row.ToCsvString() + "\r\n");
         }
 
         private void AddOrder(MyContext db)
@@ -357,20 +319,6 @@ namespace DbContextTests
 
         }
 
-        private void PrepareUser(int userId)
-        {
-            using (var db = new MyContext())
-            {
-                if (!db.Users.Any(u => u.UserName == "testuser"))
-                {
-                    db.Users.Add(new Model.User()
-                    {
-                        Id = userId,
-                        UserName = $"testuser"
-                    });
-                    db.SaveChanges();
-                }
-            }
-        }
+        private void PrepareUser(int userId) => UserTestData.PrepareUser(userId);
     }
 }
