@@ -37,11 +37,9 @@ namespace DbContextTests.Test
 
             using (var kernel = new Ninject.StandardKernel())
             {
-                kernel.Bind<IOrderingService>().To<OrderingService>().InScope(ctx => ctx.Kernel);
-                kernel.Bind<IUsersRepository>().To<UsersRepository>().InScope(ctx => ctx.Kernel);
-                kernel.Bind<IOrdersRepository>().To<OrdersRepository>().InScope(ctx => ctx.Kernel);
-                kernel.Bind<ITransactionFactory>().To<NoTransactionFactory>().InScope(ctx => ctx.Kernel);
-                kernel.Bind<MyContext>().To<MyContext>().InScope(ctx => ctx.Kernel);
+                kernel.BindServices()
+                    .UseContextDirectly()
+                    .UseNoTransactions();                
 
                 MakeOrder(kernel.Get<IOrderingService>(), itemName);
             }
@@ -79,11 +77,9 @@ namespace DbContextTests.Test
 
             using (var kernel = new Ninject.StandardKernel())
             {
-                kernel.Bind<IOrderingService, OrderingService>().To<OrderingService>().InScope(ctx => ctx.Kernel);
-                kernel.Bind<IUsersRepository>().To<UsersRepository>().InScope(ctx => ctx.Kernel);
-                kernel.Bind<IOrdersRepository>().To<OrdersRepository>().InScope(ctx => ctx.Kernel);
-                kernel.Bind<ITransactionFactory>().To<NoTransactionFactory>().InScope(ctx => ctx.Kernel);
-                kernel.Bind<MyContext>().To<MyContext>().InScope(ctx => ctx.Kernel);
+                kernel.BindServices()
+                    .UseContextDirectly()
+                    .UseNoTransactions();
 
                 var orderingService = kernel.Get<OrderingService>();
                 orderingService.ShouldThrowAfterOrderAdd = true;
@@ -129,11 +125,9 @@ namespace DbContextTests.Test
 
             using (var kernel = new Ninject.StandardKernel())
             {
-                kernel.Bind<IOrderingService, OrderingService>().To<OrderingService>().InScope(ctx => ctx.Kernel);
-                kernel.Bind<IUsersRepository>().To<UsersRepository>().InScope(ctx => ctx.Kernel);
-                kernel.Bind<IOrdersRepository>().To<OrdersRepository>().InScope(ctx => ctx.Kernel);
-                kernel.Bind<ITransactionFactory>().To<DbTransactionFactory>().InScope(ctx => ctx.Kernel);
-                kernel.Bind<MyContext, DbContext>().To<MyContext>().InScope(ctx => ctx.Kernel);
+                kernel.BindServices()
+                    .UseContextDirectly()
+                    .UseDbTransactions();
 
                 var orderingService = kernel.Get<OrderingService>();
                 orderingService.ShouldThrowAfterOrderAdd = true;
@@ -181,11 +175,9 @@ namespace DbContextTests.Test
 
             using (var kernel = new Ninject.StandardKernel())
             {
-                kernel.Bind<IOrderingService, OrderingService>().To<OrderingService>().InScope(ctx => ctx.Kernel);
-                kernel.Bind<IUsersRepository>().To<UsersRepositoryWithFactory>().InScope(ctx => ctx.Kernel);
-                kernel.Bind<IOrdersRepository>().To<OrdersRepositoryWithFactory>().InScope(ctx => ctx.Kernel);
-                kernel.Bind<ITransactionFactory>().To<SystemTransactionFactory>().InScope(ctx => ctx.Kernel);
-                kernel.Bind<IContextFactory<MyContext>>().To<MyContextFactory>().InScope(ctx => ctx.Kernel);
+                kernel.BindServices()
+                    .UseContextFromFactory()
+                    .UseSystemTransactions();
 
                 var orderingService = kernel.Get<OrderingService>();
                 orderingService.ShouldUpdatePreference = false;
@@ -228,11 +220,9 @@ namespace DbContextTests.Test
 
             using (var kernel = new Ninject.StandardKernel())
             {
-                kernel.Bind<IOrderingService, OrderingService>().To<OrderingService>().InScope(ctx => ctx.Kernel);
-                kernel.Bind<IUsersRepository>().To<UsersRepositoryWithFactory>().InScope(ctx => ctx.Kernel);
-                kernel.Bind<IOrdersRepository>().To<OrdersRepositoryWithFactory>().InScope(ctx => ctx.Kernel);
-                kernel.Bind<ITransactionFactory>().To<SystemTransactionFactory>().InScope(ctx => ctx.Kernel);
-                kernel.Bind<IContextFactory<MyContext>>().To<MyContextFactory>().InScope(ctx => ctx.Kernel);
+                kernel.BindServices()
+                    .UseContextFromFactory()
+                    .UseSystemTransactions();
 
                 var orderingService = kernel.Get<OrderingService>();
                 orderingService.ShouldUpdatePreference = true;
@@ -276,11 +266,9 @@ namespace DbContextTests.Test
 
             using (var kernel = new Ninject.StandardKernel())
             {
-                kernel.Bind<IOrderingService, OrderingService>().To<OrderingService>().InScope(ctx => ctx.Kernel);
-                kernel.Bind<IUsersRepository>().To<UsersRepositoryWithFactory>().InScope(ctx => ctx.Kernel);
-                kernel.Bind<IOrdersRepository>().To<OrdersRepositoryWithFactory>().InScope(ctx => ctx.Kernel);
-                kernel.Bind<ITransactionFactory>().To<SystemTransactionFactory>().InScope(ctx => ctx.Kernel);
-                kernel.Bind<IContextFactory<MyContext>>().To<MyContextFactory>().InScope(ctx => ctx.Kernel);
+                kernel.BindServices()
+                    .UseContextFromFactory()
+                    .UseSystemTransactions();
 
                 var orderingService = kernel.Get<OrderingService>();
                 orderingService.ShouldThrowAfterOrderAdd = true;
@@ -313,6 +301,53 @@ namespace DbContextTests.Test
         private void MakeOrder(IOrderingService orderingService, string itemName = "testitem")
         {
             orderingService.MakeOrder(itemName, userId);
+        }
+    }
+
+    static class KernelExtensions
+    {
+        public static IKernel BindServices(this IKernel kernel)
+        {
+            kernel.Bind<IOrderingService, OrderingService>().To<OrderingService>().InScope(ctx => ctx.Kernel);
+
+            return kernel;
+        }
+
+        public static IKernel UseContextDirectly(this IKernel kernel)
+        {
+            kernel.Bind<MyContext, DbContext>().To<MyContext>().InScope(ctx => ctx.Kernel);
+
+            kernel.Bind<IUsersRepository>().To<UsersRepository>().InScope(ctx => ctx.Kernel);
+            kernel.Bind<IOrdersRepository>().To<OrdersRepository>().InScope(ctx => ctx.Kernel);
+
+            return kernel;
+        }
+
+        public static IKernel UseContextFromFactory(this IKernel kernel)
+        {
+            kernel.Bind<IUsersRepository>().To<UsersRepositoryWithFactory>().InScope(ctx => ctx.Kernel);
+            kernel.Bind<IOrdersRepository>().To<OrdersRepositoryWithFactory>().InScope(ctx => ctx.Kernel);
+            kernel.Bind<IContextFactory<MyContext>>().To<MyContextFactory>().InScope(ctx => ctx.Kernel);
+
+            return kernel;
+        }
+
+        public static IKernel UseDbTransactions(this IKernel kernel)
+        {
+            kernel.Bind<ITransactionFactory>().To<DbTransactionFactory>().InScope(ctx => ctx.Kernel);
+            return kernel;
+        }
+
+        public static IKernel UseSystemTransactions(this IKernel kernel)
+        {
+            kernel.Bind<ITransactionFactory>().To<SystemTransactionFactory>().InScope(ctx => ctx.Kernel);
+            return kernel;
+        }
+
+        public static IKernel UseNoTransactions(this IKernel kernel)
+        {
+            kernel.Bind<ITransactionFactory>().To<NoTransactionFactory>().InScope(ctx => ctx.Kernel);
+            return kernel;
         }
     }
 }
