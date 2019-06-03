@@ -19,10 +19,11 @@ namespace DbContextTests.Test
         private int userId = 3;
 
         [TestMethod]
-        public void create_order_no_errors()
+        public void using_context_commit()
         {
             UserTestData.PrepareUser(userId);
 
+            string itemName = $"item-{Guid.NewGuid()}";
             int initialCount;
             int initialUserCount;
 
@@ -42,7 +43,7 @@ namespace DbContextTests.Test
                 kernel.Bind<ITransactionFactory>().To<NoTransactionFactory>().InScope(ctx => ctx.Kernel);
                 kernel.Bind<MyContext>().To<MyContext>().InScope(ctx => ctx.Kernel);
 
-                MakeOrder(kernel.Get<IOrderingService>());
+                MakeOrder(kernel.Get<IOrderingService>(), itemName);
             }
 
             Assert.AreEqual(1, MyContext.TotalInstancesCreated);
@@ -51,9 +52,12 @@ namespace DbContextTests.Test
             using (var db = new MyContext())
             {
                 var user = db.Users.Find(userId);
-                Assert.AreEqual(initialUserCount + 1, user.OrdersCount);
                 var ordersCount = db.Orders.Count(o => o.UserId == userId);
+
+                Assert.AreEqual(initialUserCount + 1, user.OrdersCount);
                 Assert.AreEqual(initialCount + 1, ordersCount);
+                Assert.AreEqual(user.UserPreferences.FavoriteProduct, itemName);
+
             }
         }
 
@@ -82,7 +86,7 @@ namespace DbContextTests.Test
                 kernel.Bind<MyContext>().To<MyContext>().InScope(ctx => ctx.Kernel);
 
                 var orderingService = kernel.Get<OrderingService>();
-                orderingService.ThrowAfterOrderAdd = true;
+                orderingService.ShouldThrowAfterOrderAdd = true;
 
                 try
                 {
@@ -132,7 +136,7 @@ namespace DbContextTests.Test
                 kernel.Bind<MyContext, DbContext>().To<MyContext>().InScope(ctx => ctx.Kernel);
 
                 var orderingService = kernel.Get<OrderingService>();
-                orderingService.ThrowAfterOrderAdd = true;
+                orderingService.ShouldThrowAfterOrderAdd = true;
 
                 try
                 {
@@ -163,6 +167,7 @@ namespace DbContextTests.Test
         {
             UserTestData.PrepareUser(userId);
 
+            string itemName = $"item-{Guid.NewGuid()}";
             int initialCount;
             int initialUserCount;
 
@@ -183,21 +188,14 @@ namespace DbContextTests.Test
                 kernel.Bind<IContextFactory<MyContext>>().To<MyContextFactory>().InScope(ctx => ctx.Kernel);
 
                 var orderingService = kernel.Get<OrderingService>();
+                orderingService.ShouldUpdatePreference = false;
 
-                try
-                {
-                    // ACT
-                    MakeOrder(kernel.Get<IOrderingService>());
-                    Assert.Fail("expected exception");
-                }
-                catch
-                {
-                    // ignore
-                }
+                // ACT
+                MakeOrder(kernel.Get<IOrderingService>(), itemName);
             }
 
             // each call to dbcontextfactory.create will create a new instance
-            Assert.AreEqual(3, MyContext.TotalInstancesCreated);
+            // Assert.AreEqual(3, MyContext.TotalInstancesCreated);
             Assert.AreEqual(0, MyContext.InstanceCount);
 
             using (var db = new MyContext())
@@ -207,6 +205,56 @@ namespace DbContextTests.Test
 
                 Assert.AreEqual(initialUserCount + 1, user.OrdersCount);
                 Assert.AreEqual(initialCount + 1, ordersCount);
+                Assert.AreNotEqual(user.UserPreferences.FavoriteProduct, itemName);
+            }
+        }
+
+        [TestMethod]
+        public void using_dbcontextfactory_update_preference_commit()
+        {
+            UserTestData.PrepareUser(userId);
+
+            string itemName = $"item-{Guid.NewGuid()}";
+            int initialCount;
+            int initialUserCount;
+
+            using (var db = new MyContext())
+            {
+                initialCount = db.Orders.Count(o => o.UserId == userId);
+                initialUserCount = db.Users.Find(userId).OrdersCount;
+            }
+
+            MyContext.ResetCounters();
+
+            using (var kernel = new Ninject.StandardKernel())
+            {
+                kernel.Bind<IOrderingService, OrderingService>().To<OrderingService>().InScope(ctx => ctx.Kernel);
+                kernel.Bind<IUsersRepository>().To<UsersRepositoryWithFactory>().InScope(ctx => ctx.Kernel);
+                kernel.Bind<IOrdersRepository>().To<OrdersRepositoryWithFactory>().InScope(ctx => ctx.Kernel);
+                kernel.Bind<ITransactionFactory>().To<SystemTransactionFactory>().InScope(ctx => ctx.Kernel);
+                kernel.Bind<IContextFactory<MyContext>>().To<MyContextFactory>().InScope(ctx => ctx.Kernel);
+
+                var orderingService = kernel.Get<OrderingService>();
+                orderingService.ShouldUpdatePreference = true;
+
+                // ACT
+                MakeOrder(kernel.Get<IOrderingService>(), itemName);
+            }
+
+            // each call to dbcontextfactory.create will create a new instance
+            // Assert.AreEqual(3, MyContext.TotalInstancesCreated);
+            Assert.AreEqual(0, MyContext.InstanceCount);
+
+            using (var db = new MyContext())
+            {
+                var user = db.Users.Find(userId);
+                var ordersCount = db.Orders.Count(o => o.UserId == userId);
+
+                Assert.AreEqual(initialUserCount + 1, user.OrdersCount);
+                Assert.AreEqual(initialCount + 1, ordersCount);
+
+                // ups, we updated the object, but didn't reattach it to the new context!
+                Assert.AreEqual(user.UserPreferences.FavoriteProduct, itemName);
             }
         }
 
@@ -235,7 +283,7 @@ namespace DbContextTests.Test
                 kernel.Bind<IContextFactory<MyContext>>().To<MyContextFactory>().InScope(ctx => ctx.Kernel);
 
                 var orderingService = kernel.Get<OrderingService>();
-                orderingService.ThrowAfterOrderAdd = true;
+                orderingService.ShouldThrowAfterOrderAdd = true;
 
                 try
                 {
@@ -262,9 +310,9 @@ namespace DbContextTests.Test
             }
         }
 
-        private void MakeOrder(IOrderingService orderingService)
+        private void MakeOrder(IOrderingService orderingService, string itemName = "testitem")
         {
-            orderingService.MakeOrder("testitem", userId);
+            orderingService.MakeOrder(itemName, userId);
         }
     }
 }

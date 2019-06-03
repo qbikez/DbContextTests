@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Data.Entity;
 
 namespace DbContextTests.Repositories
 {
@@ -21,7 +22,7 @@ namespace DbContextTests.Repositories
         {
             using (var db = contextFactory.Create())
             {
-                return db.Users.Find(userId);
+                return db.Users.Include(u => u.UserPreferences).SingleOrDefault(u => u.Id == userId);
             }
         }
 

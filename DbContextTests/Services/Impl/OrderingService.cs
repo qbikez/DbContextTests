@@ -28,19 +28,23 @@ namespace DbContextTests.Services
                 var order = new Order(itemName, userId);
                 ordersRepository.Add(order);
 
-                if (ThrowAfterOrderAdd) throw new Exception("simulated error after adding order");
+                if (ShouldThrowAfterOrderAdd) throw new Exception("simulated error after adding order");
 
                 var user = usersRepository.Find(userId);
+
                 user.IncreaseOrdersCount();
+                if (ShouldUpdatePreference) user.UpdatePreference(p => p.FavoriteProduct = itemName);
+
                 usersRepository.Update(user);
 
-                if (ThrowAfterUserUpdate) throw new Exception("simulated error after updating user counter");
+                if (ShouldThrowAfterUserUpdate) throw new Exception("simulated error after updating user counter");
 
                 tran.Commit();
             }
         }
 
-        public bool ThrowAfterOrderAdd { get; set; }
-        public bool ThrowAfterUserUpdate { get; set; }
+        public bool ShouldThrowAfterOrderAdd { get; set; }
+        public bool ShouldThrowAfterUserUpdate { get; set; }
+        public bool ShouldUpdatePreference { get; set; } = true;
     }
 }

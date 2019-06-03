@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MyContext.Model;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -16,6 +17,7 @@ namespace DbContextTests.Model
         public string UserName { get; set; }
         public virtual ICollection<Order> Orders { get; set; }
         public int OrdersCount { get; set; }
+        public virtual UserPreferences UserPreferences { get; set; }
 
         public void IncreaseOrdersCount()
         {
@@ -27,6 +29,16 @@ namespace DbContextTests.Model
             // d) OrdersManager?
 
             OrdersCount++;
+        }
+
+        public void UpdatePreference(Action<UserPreferences> action)
+        {
+            // will throw objectdisposedexception if using lazyloading and reference was not loaded and context was disposed
+            if (UserPreferences == null)
+            {
+                UserPreferences = new UserPreferences();
+            }
+            action(UserPreferences);
         }
     }
 }
