@@ -142,10 +142,8 @@ namespace DbContextTests.Test
                 var ordersCount = db.Orders.Count(o => o.UserId == userId);
                 Assert.AreEqual(initialUserCount, user.OrdersCount);
                 // will be incosistent:
-                Assert.ThrowsException<AssertFailedException>(() =>
-                {
-                    Assert.AreEqual(initialCount, ordersCount);
-                });
+                
+                AssertInconclusive(initialCount, ordersCount);                
             }
         }
 
@@ -290,11 +288,8 @@ namespace DbContextTests.Test
                 Assert.AreEqual(initialUserCount + 1, user.OrdersCount);
                 Assert.AreEqual(initialCount + 1, ordersCount);
 
-                Assert.ThrowsException<AssertFailedException>(() =>
-                {
-                    // ups, we updated the object, but didn't reattach it to the new context!
-                    Assert.AreEqual(user.UserPreferences.FavoriteProduct, itemName);
-                });
+                // ups, we updated the object, but didn't reattach it to the new context!
+                AssertInconclusive(user.UserPreferences.FavoriteProduct, itemName);
             }
         }
 
@@ -349,6 +344,20 @@ namespace DbContextTests.Test
         private void MakeOrder(IOrderingService orderingService, string itemName = "testitem")
         {
             orderingService.MakeOrder(itemName, userId);
+        }
+
+        private void AssertInconclusive<T>(T expected, T actual)
+        {
+            try
+            {
+                Assert.AreEqual(expected, actual);                
+            }
+            catch (AssertFailedException ex)
+            {
+                Assert.Inconclusive(ex.Message, ex);
+            }
+            
+            Assert.AreNotEqual(expected, actual);
         }
     }
 }
