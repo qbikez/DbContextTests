@@ -45,6 +45,6 @@ namespace DbContextTests.Services
 
         public bool ShouldThrowAfterOrderAdd { get; set; }
         public bool ShouldThrowAfterUserUpdate { get; set; }
-        public bool ShouldUpdatePreference { get; set; } = true;
+        public bool ShouldUpdatePreference { get; set; } 
     }
 }

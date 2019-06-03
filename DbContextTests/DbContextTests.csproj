@@ -79,6 +79,7 @@
     <Compile Include="Infrastructure\ITransactionFactory.cs" />
     <Compile Include="Infrastructure\ITransaction.cs" />
     <Compile Include="Test\DDDImplementationsTest.cs" />
+    <Compile Include="Infrastructure\KernelExtensions.cs" />
     <Compile Include="Test\TransactionScopeTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UserTestData.cs" />
