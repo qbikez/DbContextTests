@@ -21,6 +21,7 @@ namespace DbContextTests.Repositories.Impl
             using(var db = contextFactory.Create())
             {
                 db.Orders.Add(order);
+                db.SaveChanges();
             }
         }
     }

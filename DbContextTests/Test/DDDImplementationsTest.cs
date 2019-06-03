@@ -1,5 +1,6 @@
 ﻿using DbContextTests.Infrastructure;
 using DbContextTests.Repositories;
+using DbContextTests.Repositories.Impl;
 using DbContextTests.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Ninject;
@@ -13,7 +14,7 @@ using System.Threading.Tasks;
 namespace DbContextTests.Test
 {
     [TestClass]
-    public class DDDImplementations
+    public class DDDImplementationsTest
     {
         private int userId = 3;
 
@@ -153,6 +154,110 @@ namespace DbContextTests.Test
                 var user = db.Users.Find(userId);
                 Assert.AreEqual(initialUserCount, user.OrdersCount);
                 var ordersCount = db.Orders.Count(o => o.UserId == userId);
+                Assert.AreEqual(initialCount, ordersCount);
+            }
+        }
+
+        [TestMethod]
+        public void using_dbcontextfactory_commit()
+        {
+            UserTestData.PrepareUser(userId);
+
+            int initialCount;
+            int initialUserCount;
+
+            using (var db = new MyContext())
+            {
+                initialCount = db.Orders.Count(o => o.UserId == userId);
+                initialUserCount = db.Users.Find(userId).OrdersCount;
+            }
+
+            MyContext.ResetCounters();
+
+            using (var kernel = new Ninject.StandardKernel())
+            {
+                kernel.Bind<IOrderingService, OrderingService>().To<OrderingService>().InScope(ctx => ctx.Kernel);
+                kernel.Bind<IUsersRepository>().To<UsersRepositoryWithFactory>().InScope(ctx => ctx.Kernel);
+                kernel.Bind<IOrdersRepository>().To<OrdersRepositoryWithFactory>().InScope(ctx => ctx.Kernel);
+                kernel.Bind<ITransactionFactory>().To<SystemTransactionFactory>().InScope(ctx => ctx.Kernel);
+                kernel.Bind<IContextFactory<MyContext>>().To<MyContextFactory>().InScope(ctx => ctx.Kernel);
+
+                var orderingService = kernel.Get<OrderingService>();
+
+                try
+                {
+                    // ACT
+                    MakeOrder(kernel.Get<IOrderingService>());
+                    Assert.Fail("expected exception");
+                }
+                catch
+                {
+                    // ignore
+                }
+            }
+
+            // each call to dbcontextfactory.create will create a new instance
+            Assert.AreEqual(3, MyContext.TotalInstancesCreated);
+            Assert.AreEqual(0, MyContext.InstanceCount);
+
+            using (var db = new MyContext())
+            {
+                var user = db.Users.Find(userId);
+                var ordersCount = db.Orders.Count(o => o.UserId == userId);
+
+                Assert.AreEqual(initialUserCount + 1, user.OrdersCount);
+                Assert.AreEqual(initialCount + 1, ordersCount);
+            }
+        }
+
+        [TestMethod]
+        public void using_dbcontextfactory_rollback()
+        {
+            UserTestData.PrepareUser(userId);
+
+            int initialCount;
+            int initialUserCount;
+
+            using (var db = new MyContext())
+            {
+                initialCount = db.Orders.Count(o => o.UserId == userId);
+                initialUserCount = db.Users.Find(userId).OrdersCount;
+            }
+
+            MyContext.ResetCounters();
+
+            using (var kernel = new Ninject.StandardKernel())
+            {
+                kernel.Bind<IOrderingService, OrderingService>().To<OrderingService>().InScope(ctx => ctx.Kernel);
+                kernel.Bind<IUsersRepository>().To<UsersRepositoryWithFactory>().InScope(ctx => ctx.Kernel);
+                kernel.Bind<IOrdersRepository>().To<OrdersRepositoryWithFactory>().InScope(ctx => ctx.Kernel);
+                kernel.Bind<ITransactionFactory>().To<SystemTransactionFactory>().InScope(ctx => ctx.Kernel);
+                kernel.Bind<IContextFactory<MyContext>>().To<MyContextFactory>().InScope(ctx => ctx.Kernel);
+
+                var orderingService = kernel.Get<OrderingService>();
+                orderingService.ThrowAfterOrderAdd = true;
+
+                try
+                {
+                    // ACT
+                    MakeOrder(kernel.Get<IOrderingService>());
+                    Assert.Fail("expected exception");
+                }
+                catch
+                {
+                    // ignore
+                }
+            }
+
+            Assert.AreEqual(1, MyContext.TotalInstancesCreated);
+            Assert.AreEqual(0, MyContext.InstanceCount);
+
+            using (var db = new MyContext())
+            {
+                var user = db.Users.Find(userId);
+                var ordersCount = db.Orders.Count(o => o.UserId == userId);
+
+                Assert.AreEqual(initialUserCount, user.OrdersCount);
                 Assert.AreEqual(initialCount, ordersCount);
             }
         }
