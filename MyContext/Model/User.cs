@@ -16,5 +16,17 @@ namespace DbContextTests.Model
         public string UserName { get; set; }
         public virtual ICollection<Order> Orders { get; set; }
         public int OrdersCount { get; set; }
+
+        public void IncreaseOrdersCount()
+        {
+            // is it better to allow external code to modify OrdersCount directory?
+            // if yes, then who should do it:
+            // a) anyone?
+            // b) OrderingService?
+            // c) OrdersRepository?
+            // d) OrdersManager?
+
+            OrdersCount++;
+        }
     }
 }

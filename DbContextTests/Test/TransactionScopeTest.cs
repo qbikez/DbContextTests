@@ -284,7 +284,7 @@ namespace DbContextTests
 
         private void AddOrder(MyContext db)
         {
-            db.Orders.Add(new Model.Order()
+            db.Orders.Add(new Model.Order("item-1")
             {
                 User = db.Users.Find(userId)
             }); ;

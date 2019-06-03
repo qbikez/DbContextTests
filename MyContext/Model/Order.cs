@@ -18,5 +18,23 @@ namespace DbContextTests.Model
         [ForeignKey(nameof(User))]
         public int UserId { get; set; }
         public virtual User User { get; set; }
+
+        [Obsolete("For EF only", true)]
+        public Order()
+        {
+            // for EF
+            // this has to be public IF we want LazyLoading
+        }
+
+        public Order(string itemName)
+        {
+            Item = itemName;
+        }
+
+        public Order(string itemName, int userId)
+        {
+            Item = itemName;
+            UserId = userId;
+        }
     }
 }
