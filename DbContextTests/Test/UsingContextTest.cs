@@ -93,6 +93,7 @@ namespace DbContextTests
 
 
         [TestMethod]
+        [Ignore("loading whole collection is to slow")]
         public void get_and_add_to_collection_multiple_context_reattach()
         {
             UserTestData.PrepareUser(userId);
@@ -144,6 +145,7 @@ namespace DbContextTests
         }
 
         [TestMethod]
+        [Ignore("user.Orders.Add cause EF to load all user's orders")]
         public void get_and_add_to_collection_single_context()
         {
             UserTestData.PrepareUser(userId);
