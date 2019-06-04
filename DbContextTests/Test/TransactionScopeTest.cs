@@ -4,12 +4,12 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Transactions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 using OtherContext;
 
 namespace DbContextTests
 {
-    [TestClass]
+    [TestFixture]
     public class TransactionScopeTest
     {
         private int userId = 1;
@@ -20,7 +20,7 @@ namespace DbContextTests
             perfMeter = new PerformanceMeter("perf.csv", 1000);
         }
 
-        [TestMethod]
+        [Test]
         public void rollback_transaction_in_multiple_same_contexts()
         {
             PrepareUser(userId);
@@ -49,7 +49,7 @@ namespace DbContextTests
             }
         }
 
-        [TestMethod]
+        [Test]
         public void rollback_transaction_in_multiple_same_contexts_perf()
         {
             PrepareUser(userId);
@@ -73,7 +73,7 @@ namespace DbContextTests
             });
         }
 
-        [TestMethod]
+        [Test]
         public void commit_transaction_in_multiple_same_contexts_perf()
         {
             PrepareUser(userId);
@@ -99,7 +99,7 @@ namespace DbContextTests
             });
         }
 
-        [TestMethod]
+        [Test]
         public void rollback_transaction_in_single_context_perf()
         {
             PrepareUser(userId);
@@ -120,7 +120,7 @@ namespace DbContextTests
             });
         }
 
-        [TestMethod]
+        [Test]
         public void rollback_transaction_in_single_context()
         {
             PrepareUser(userId);
@@ -139,7 +139,7 @@ namespace DbContextTests
 
         }
 
-        [TestMethod]
+        [Test]
         public void no_transactions_in_single_context_perf()
         {
             PrepareUser(userId);
@@ -158,7 +158,7 @@ namespace DbContextTests
             });
         }
 
-        [TestMethod]
+        [Test]
         public void commit_db_transactions_in_single_context_perf()
         {
             PrepareUser(userId);
@@ -179,7 +179,7 @@ namespace DbContextTests
             });
         }
 
-        [TestMethod]
+        [Test]
         public void rollback_db_transactions_in_single_context_perf()
         {
             PrepareUser(userId);
@@ -201,7 +201,7 @@ namespace DbContextTests
         }
 
 
-        [TestMethod]
+        [Test]
         public void commit_transaction_in_single_context_perf()
         {
             PrepareUser(userId);
@@ -223,7 +223,7 @@ namespace DbContextTests
             });
         }
 
-        [TestMethod]
+        [Test]
         public void rollback_transaction_in_multiple_different_contexts()
         {
             PrepareUser(userId);
@@ -258,7 +258,7 @@ namespace DbContextTests
             }
         }
 
-        [TestMethod]
+        [Test]
         public void rollback_transaction_in_multiple_different_contexts_perf()
         {
             PrepareUser(userId);

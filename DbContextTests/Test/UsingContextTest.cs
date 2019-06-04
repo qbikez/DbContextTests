@@ -1,5 +1,5 @@
 ﻿using DbContextTests.Model;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace DbContextTests
 {
-    [TestClass]
+    [TestFixture]
     public class UsingContextTest
     {
         private int userId = 2;
@@ -19,7 +19,7 @@ namespace DbContextTests
             perfMeter = new PerformanceMeter("using-perf.csv", 1000);
         }
 
-        [TestMethod]
+        [Test]
         public void get_and_update_single_context()
         {
             UserTestData.PrepareUser(userId);
@@ -50,7 +50,7 @@ namespace DbContextTests
             }
         }
 
-        [TestMethod]
+        [Test]
         public void get_and_update_multiple_context_reattach()
         {
             UserTestData.PrepareUser(userId);
@@ -92,7 +92,7 @@ namespace DbContextTests
         }
 
 
-        [TestMethod]
+        [Test]
         [Ignore("loading whole collection is to slow")]
         public void get_and_add_to_collection_multiple_context_reattach()
         {
@@ -144,7 +144,7 @@ namespace DbContextTests
             }
         }
 
-        [TestMethod]
+        [Test]
         [Ignore("user.Orders.Add cause EF to load all user's orders")]
         public void get_and_add_to_collection_single_context()
         {
@@ -188,7 +188,7 @@ namespace DbContextTests
             }
         }
 
-        [TestMethod]
+        [Test]
         public void get_and_add_to_dbset_single_context()
         {
             UserTestData.PrepareUser(userId);
@@ -228,7 +228,7 @@ namespace DbContextTests
             }
         }
 
-        [TestMethod]
+        [Test]
         public void get_and_add_to_dbset_multiple_contexts()
         {
             UserTestData.PrepareUser(userId);
@@ -274,7 +274,7 @@ namespace DbContextTests
             }
         }
 
-        [TestMethod]
+        [Test]
         public void get_and_update_multiple_context_retrieve()
         {
             UserTestData.PrepareUser(userId);
@@ -314,7 +314,7 @@ namespace DbContextTests
             }
         }
 
-        [TestMethod]
+        [Test]
         public void get_and_update_multiple_context_bad()
         {
             UserTestData.PrepareUser(userId);

@@ -1,5 +1,5 @@
 ﻿using DbContextTests.Services;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 using Ninject;
 using System;
 using System.Collections.Generic;
@@ -11,12 +11,12 @@ using DbContextTests.Infrastructure;
 
 namespace DbContextTests.Test
 {
-    [TestClass]
+    [TestFixture]
     public class MakeOrderTest
     {
         private int userId = 3;
 
-        [TestMethod]
+        [Test]
         public void make_order_with_direct_context()
         {
             UserTestData.PrepareUser(userId);
@@ -55,7 +55,7 @@ namespace DbContextTests.Test
             }
         }
 
-        [TestMethod]
+        [Test]
         public void make_order_with_context_factory()
         {
             UserTestData.PrepareUser(userId);
@@ -98,7 +98,7 @@ namespace DbContextTests.Test
             }
         }
 
-        [TestMethod]
+        [Test]
         public void make_order_without_transaction_leaves_inconsistent_db()
         {
             UserTestData.PrepareUser(userId);
@@ -144,11 +144,11 @@ namespace DbContextTests.Test
                 Assert.AreEqual(initialUserCount, user.OrdersCount);
 
                 // will be incosistent:                
-                Assert.That.AreEqual(initialCount, ordersCount, AssertOutcome.Inconclusive);                
+                AssertThat.AreEqual(initialCount, ordersCount, AssertOutcome.Inconclusive);                
             }
         }
 
-        [TestMethod]
+        [Test]
         public void make_order_with_transaction_leaves_consistent_db()
         {
             UserTestData.PrepareUser(userId);
@@ -197,7 +197,7 @@ namespace DbContextTests.Test
             }
         }
 
-        [TestMethod]
+        [Test]
         public void make_order_with_context_factory_leaves_consistent_db()
         {
             UserTestData.PrepareUser(userId);

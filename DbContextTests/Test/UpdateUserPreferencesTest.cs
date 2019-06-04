@@ -1,5 +1,5 @@
 ﻿using DbContextTests.Services;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 using Ninject;
 using System;
 using System.Collections.Generic;
@@ -11,12 +11,12 @@ using DbContextTests.Infrastructure;
 
 namespace DbContextTests.Test
 {
-    [TestClass]
+    [TestFixture]
     public class UpdateUserPreferencesTest
     {
         private int userId = 4;
 
-        [TestMethod]
+        [Test]
         public void update_related_entity_with_context_factory()
         {
             UserTestData.PrepareUser(userId);
@@ -38,11 +38,11 @@ namespace DbContextTests.Test
                 var user = db.Users.Include(u => u.UserPreferences).FirstOrDefault(u => u.Id == userId);
 
                 // ups, we updated the object, but didn't reattach it to the new context!
-                Assert.That.AreEqual(itemName, user.UserPreferences.FavoriteProduct, AssertOutcome.Inconclusive);
+                AssertThat.AreEqual(itemName, user.UserPreferences.FavoriteProduct, AssertOutcome.Inconclusive);
             }
         }
 
-        [TestMethod]
+        [Test]
         public void update_related_entity_with_direct_context()
         {
             UserTestData.PrepareUser(userId);
@@ -64,7 +64,7 @@ namespace DbContextTests.Test
                 var user = db.Users.Include(u => u.UserPreferences).FirstOrDefault(u => u.Id == userId);
 
                 // ups, we updated the object, but didn't reattach it to the new context!
-                Assert.That.AreEqual(itemName, user.UserPreferences.FavoriteProduct);
+                AssertThat.AreEqual(itemName, user.UserPreferences.FavoriteProduct);
             }
         }
 

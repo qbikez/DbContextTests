@@ -10,8 +10,6 @@ namespace DbContextTests.Infrastructure
 {
     class NoTransactionFactory : ITransactionFactory
     {
-        private readonly DbContext db;
-
         class NoTransaction : ITransaction
         {
             public NoTransaction()

@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,20 +10,20 @@ namespace DbContextTests.Infrastructure
     /// <summary>
     /// will result in an inconclusive test, not a failing one
     /// </summary>
-    static class AssertExtensions
+    static class AssertThat
     {
-        public static void AreEqual<T>(this Assert a, T expected, T actual, AssertOutcome outcome = AssertOutcome.Fail)
+        public static void AreEqual<T>(T expected, T actual, AssertOutcome outcome = AssertOutcome.Fail)
         {
             try
             {
                 Assert.AreEqual(expected, actual);
             }
-            catch (AssertFailedException ex)
+            catch (AssertionException ex)
             {
                 switch(outcome)
                 {
                     case AssertOutcome.Inconclusive:
-                        Assert.Inconclusive(ex.Message, ex);
+                        Assert.Inconclusive(ex.Message);
                         return;
                     case AssertOutcome.Fail:
                     default:

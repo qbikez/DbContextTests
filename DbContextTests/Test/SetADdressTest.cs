@@ -1,5 +1,5 @@
 ﻿using DbContextTests.Services;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 using Ninject;
 using System;
 using System.Collections.Generic;
@@ -12,12 +12,12 @@ using MyContext.Model;
 
 namespace DbContextTests.Test
 {
-    [TestClass]
+    [TestFixture]
     public class SetAddressTest
     {
         private int userId = 4;
 
-        [TestMethod]
+        [Test]
         public void update_value_object_with_context_factory()
         {
             UserTestData.PrepareUser(userId);
@@ -43,11 +43,11 @@ namespace DbContextTests.Test
             {
                 var user = db.Users.FirstOrDefault(u => u.Id == userId);
 
-                Assert.That.AreEqual(houseNo, user.Address.HouseNo);
+                AssertThat.AreEqual(houseNo, user.Address.HouseNo);
             }
         }
 
-        [TestMethod]
+        [Test]
         public void update_value_object_with_direct_context()
         {
             UserTestData.PrepareUser(userId);
@@ -74,7 +74,7 @@ namespace DbContextTests.Test
                 var user = db.Users.FirstOrDefault(u => u.Id == userId);
 
                 // ups, we updated the object, but didn't reattach it to the new context!
-                Assert.That.AreEqual(houseNo, user.Address.HouseNo);
+                AssertThat.AreEqual(houseNo, user.Address.HouseNo);
             }
         }
     }
