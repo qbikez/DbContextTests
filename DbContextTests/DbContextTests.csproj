@@ -64,6 +64,7 @@
     <Compile Include="Infrastructure\IContextFactory.cs" />
     <Compile Include="Infrastructure\MyContextFactory.cs" />
     <Compile Include="Infrastructure\NoTransactionFactory.cs" />
+    <Compile Include="Infrastructure\AssertExtensions.cs" />
     <Compile Include="Infrastructure\SystemTransactionFactory.cs" />
     <Compile Include="OrdersService.cs" />
     <Compile Include="PerfCsvRow.cs" />
@@ -78,10 +79,11 @@
     <Compile Include="Services\IOrderingService.cs" />
     <Compile Include="Infrastructure\ITransactionFactory.cs" />
     <Compile Include="Infrastructure\ITransaction.cs" />
-    <Compile Include="Test\DDDImplementationsTest.cs" />
+    <Compile Include="Test\MakeOrderTest.cs" />
     <Compile Include="Infrastructure\KernelExtensions.cs" />
     <Compile Include="Test\TransactionScopeTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Test\UpdateUserPreferencesTest.cs" />
     <Compile Include="UserTestData.cs" />
     <Compile Include="Test\UsingContextTest.cs" />
   </ItemGroup>

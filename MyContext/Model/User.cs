@@ -17,7 +17,7 @@ namespace DbContextTests.Model
         public string UserName { get; set; }
         public virtual ICollection<Order> Orders { get; set; }
         public int OrdersCount { get; set; }
-        public virtual UserPreferences UserPreferences { get; set; }
+        public UserPreferences UserPreferences { get; set; }
 
         public void IncreaseOrdersCount()
         {

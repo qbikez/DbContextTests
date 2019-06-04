@@ -33,7 +33,6 @@ namespace DbContextTests.Services
                 var user = usersRepository.Find(userId);
 
                 user.IncreaseOrdersCount();
-                if (ShouldUpdatePreference) user.UpdatePreference(p => p.FavoriteProduct = itemName);
 
                 usersRepository.Update(user);
 
@@ -43,8 +42,16 @@ namespace DbContextTests.Services
             }
         }
 
+        public void SetUserPreferences(int userId, string favoriteItem)
+        {
+            var user = usersRepository.Find(userId);
+
+            user.UpdatePreference(p => p.FavoriteProduct = favoriteItem);
+
+            usersRepository.Update(user);
+        }
+
         public bool ShouldThrowAfterOrderAdd { get; set; }
         public bool ShouldThrowAfterUserUpdate { get; set; }
-        public bool ShouldUpdatePreference { get; set; } 
     }
 }

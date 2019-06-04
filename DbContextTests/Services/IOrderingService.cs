@@ -3,5 +3,6 @@
     interface IOrderingService
     {
         void MakeOrder(string itemName, int userId);
+        void SetUserPreferences(int userId, string favoriteItem);
     }
 }

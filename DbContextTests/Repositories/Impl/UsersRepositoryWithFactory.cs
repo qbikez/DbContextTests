@@ -30,9 +30,11 @@ namespace DbContextTests.Repositories
         {
             using (var db = contextFactory.Create())
             {
-                // not sure if this is required - if the object is retrieved from the same context instance, the state should be correct,
-                // unless change tracking is disabled
-                db.Entry(user).State = System.Data.Entity.EntityState.Modified;
+                db.Users.Attach(user);
+                db.Entry(user).State = EntityState.Modified;
+
+                // otherwise, user.UserPreferences will not be updated, even if it's changed
+                db.Entry(user.UserPreferences).State = EntityState.Modified;
 
                 db.SaveChanges();
             }

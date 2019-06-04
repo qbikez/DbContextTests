@@ -1,4 +1,5 @@
 ﻿using DbContextTests.Model;
+using MyContext.Model;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -19,6 +20,8 @@ namespace DbContextTests
 
         public DbSet<User> Users { get; set; }
         public DbSet<Order> Orders { get; set; }
+
+        public DbSet<UserPreferences> UserPreferences { get; set; }
 
         public MyContext()
         {
