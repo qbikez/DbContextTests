@@ -52,5 +52,19 @@ namespace DbContextTests.Test
             kernel.Bind<ITransactionFactory>().To<NoTransactionFactory>().InScope(ctx => ctx.Kernel);
             return kernel;
         }
+
+        public static void ConfigureDirectContext(this IKernel kernel)
+        {
+            kernel.BindServices()
+                    .UseContextDirectly()
+                    .UseSystemTransactions();
+        }
+
+        public static void ConfigureContextFactory(this IKernel kernel)
+        {
+            kernel.BindServices()
+                    .UseContextFromFactory()
+                    .UseSystemTransactions();
+        }
     }
 }

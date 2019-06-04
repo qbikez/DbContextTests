@@ -1,5 +1,6 @@
 ﻿using DbContextTests.Model;
 using DbContextTests.Repositories;
+using MyContext.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -47,6 +48,15 @@ namespace DbContextTests.Services
             var user = usersRepository.Find(userId);
 
             user.UpdatePreference(p => p.FavoriteProduct = favoriteItem);
+
+            usersRepository.Update(user);
+        }
+
+        public void SetUserAddress(int userId, Address newAddress)
+        {
+            var user = usersRepository.Find(userId);
+
+            user.SetAddress(newAddress);
 
             usersRepository.Update(user);
         }

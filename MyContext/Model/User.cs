@@ -19,6 +19,8 @@ namespace DbContextTests.Model
         public int OrdersCount { get; set; }
         public UserPreferences UserPreferences { get; set; }
 
+        public Address Address { get; set; }
+
         public void IncreaseOrdersCount()
         {
             // is it better to allow external code to modify OrdersCount directory?
@@ -39,6 +41,11 @@ namespace DbContextTests.Model
                 UserPreferences = new UserPreferences();
             }
             action(UserPreferences);
+        }
+
+        public void SetAddress(Address address)
+        {
+            Address = address;
         }
     }
 }

@@ -56,7 +56,12 @@
     <Compile Include="Migrations\201906030508108_UserPreferences.Designer.cs">
       <DependentUpon>201906030508108_UserPreferences.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201906040445376_AddAddress.cs" />
+    <Compile Include="Migrations\201906040445376_AddAddress.Designer.cs">
+      <DependentUpon>201906040445376_AddAddress.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
+    <Compile Include="Model\Address.cs" />
     <Compile Include="Model\Order.cs" />
     <Compile Include="Model\User.cs" />
     <Compile Include="Model\UserPreferences.cs" />
@@ -69,6 +74,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201906030508108_UserPreferences.resx">
       <DependentUpon>201906030508108_UserPreferences.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201906040445376_AddAddress.resx">
+      <DependentUpon>201906040445376_AddAddress.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

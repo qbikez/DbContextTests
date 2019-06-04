@@ -8,47 +8,52 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Data.Entity;
 using DbContextTests.Infrastructure;
+using MyContext.Model;
 
 namespace DbContextTests.Test
 {
     [TestClass]
-    public class UpdateUserPreferencesTest
+    public class SetAddressTest
     {
         private int userId = 4;
 
         [TestMethod]
-        public void update_related_entity_with_context_factory()
+        public void update_value_object_with_context_factory()
         {
             UserTestData.PrepareUser(userId);
 
-            string itemName = $"item-{Guid.NewGuid()}";
+            string houseNo = Guid.NewGuid().ToString("n");
 
             using (var kernel = new Ninject.StandardKernel())
             {
-                kernel.ConfigureDirectContext();
+                kernel.ConfigureContextFactory();
 
                 var orderingService = kernel.Get<IOrderingService>();
 
                 // ACT
-                orderingService.SetUserPreferences(userId, itemName);
+                orderingService.SetUserAddress(userId, new Address()
+                {
+                    City = "Poznań",
+                    HouseNo = houseNo,
+                    Street = "Brzęczyszczykiewicza"
+                });
             }
 
             using (var db = new MyContext())
             {
-                var user = db.Users.Include(u => u.UserPreferences).FirstOrDefault(u => u.Id == userId);
+                var user = db.Users.FirstOrDefault(u => u.Id == userId);
 
-                // ups, we updated the object, but didn't reattach it to the new context!
-                Assert.That.AreEqual(itemName, user.UserPreferences.FavoriteProduct, AssertOutcome.Inconclusive);
+                Assert.That.AreEqual(houseNo, user.Address.HouseNo);
             }
         }
 
         [TestMethod]
-        public void update_related_entity_with_direct_context()
+        public void update_value_object_with_direct_context()
         {
             UserTestData.PrepareUser(userId);
 
-            string itemName = $"item-{Guid.NewGuid()}";
-            
+            string houseNo = Guid.NewGuid().ToString("n");
+
             using (var kernel = new Ninject.StandardKernel())
             {
                 kernel.ConfigureDirectContext();
@@ -56,17 +61,21 @@ namespace DbContextTests.Test
                 var orderingService = kernel.Get<IOrderingService>();
 
                 // ACT
-                orderingService.SetUserPreferences(userId, itemName);
+                orderingService.SetUserAddress(userId, new Address()
+                {
+                    City = "Poznań",
+                    HouseNo = houseNo,
+                    Street = "Brzęczyszczykiewicza"
+                });
             }
 
             using (var db = new MyContext())
             {
-                var user = db.Users.Include(u => u.UserPreferences).FirstOrDefault(u => u.Id == userId);
+                var user = db.Users.FirstOrDefault(u => u.Id == userId);
 
                 // ups, we updated the object, but didn't reattach it to the new context!
-                Assert.That.AreEqual(itemName, user.UserPreferences.FavoriteProduct);
+                Assert.That.AreEqual(houseNo, user.Address.HouseNo);
             }
         }
-
     }
 }
